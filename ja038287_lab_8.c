@@ -5,82 +5,36 @@
 int extraMemoryAllocated;
 
 void swap(int* a, int* b) {
-
     int temp = *a;
     *a = *b;
     *b = temp;
 }
 
-void heapify(int array[], int N, int i) {
-    int largest = i;
+void heapify(int array[], int N, int oriVal) {
+    int largest = oriVal;
 
-    int left = 2 * i + 1;
-    int right = 2 * i + 2;
+    int left = 2 * oriVal + 1;
+    int right = 2 * oriVal + 2;
 
     if (left < N && array[left] > array[largest])
         largest = left;
     if (right < N && array[right] > array[largest])
         largest = right;
 
-    if (largest != i) {
-        swap(&array[i], &array[largest]);
+    if (largest != oriVal) {
+        swap(&array[oriVal], &array[largest]);
         heapify(array, N, largest);
     }
 }
 
-void heapSort(int arr[], int N) {
+void heapSort(int array[], int N) {
     for (int i = N / 2 - 1; i >= 0; i--)
-        heapify(arr, N, i);
+        heapify(array, N, i);
 
     for (int i = N - 1; i >= 0; i--) {
-        swap(&arr[0], &arr[i]);
-        heapify(arr, i, 0);
+        swap(&array[0], &array[i]);
+        heapify(array, i, 0);
     }
-}
-
-void merge(int *arr, int l, int m, int r) {
-    int k, i, j;
-    int n1 = m - l + 1;
-    int n2 = r - m;
-    
-    extraMemoryAllocated += 2;
-    int *L = (int*) malloc(n1*sizeof(int));
-    int *R = (int*) malloc(n2*sizeof(int));
-
-    for (i = 0; i < n1; i++)
-        L[i] = arr[l + i];
-    for (j = 0; j < n2; j++)
-        R[j] = arr[m + 1+ j];
-
-    i = 0;
-    j = 0;
-    k = l;
-    
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
-            arr[k] = L[i];
-            i++;
-        }
-        else {
-            arr[k] = R[j];
-            j++;
-        }
-        k++;
-    }
-    
-    while (i < n1) {
-        arr[k] = L[i];
-        i++;
-        k++;
-    }
-
-    while (j < n2) {
-        arr[k] = R[j];
-        j++;
-        k++;
-    }
-    free(L);
-    free(R);
 }
 
 void mergeSort(int *pData, int left, int right) {
@@ -88,7 +42,51 @@ void mergeSort(int *pData, int left, int right) {
         int mid = (left+right)/2;
         mergeSort(pData, left, mid);
         mergeSort(pData, mid+1, right);
-        merge(pData, left, mid, right);
+        
+        int q1 = mid - left + 1;
+        int q2 = right - mid;
+        
+        extraMemoryAllocated += (q1*sizeof(int)) + (q2*sizeof(int));
+        
+        int *leftList = (int*) malloc(q1*sizeof(int));
+        int *rightList = (int*) malloc(q2*sizeof(int));
+        
+        for (int i = 0; i < q1; i++)
+        	leftList[i] = pData[left + i];
+        for (int i = 0; i < q2; i++) 
+        	rightList[i] = pData[mid + 1 + i];
+        
+        int leftCounter = 0;
+        int rightCounter = 0;
+        
+        int k = left;
+        
+        while (leftCounter < q1 && rightCounter < q2) {
+        	if(leftList[leftCounter] <= rightList[rightCounter]) {
+        		pData[k] = leftList[leftCounter];
+        		leftCounter++;
+        	}
+        	else {
+        		pData[k] = rightList[rightCounter];
+        		rightCounter++;
+        	}
+        k++;
+        }
+        	while(leftCounter < q1) {
+        		pData[k] = leftList[leftCounter];
+        		leftCounter++;
+        		k++;
+        	}
+        	
+        	while (rightCounter < q2) {
+        		pData[k] = rightList[rightCounter];
+        		rightCounter++;
+        		k++;
+        	}
+        
+        free(leftList);
+        free(rightList);
+        
     } 
 }
 
@@ -121,7 +119,9 @@ int parseData(char *inputFileName, int **ppData) {
 // prints first and last 100 items in the data array
 void printArray(int pData[], int dataSz) {
 	int i, sz = dataSz - 100;
+	
 	printf("\tData:\n\t");
+	
 	for (i=0;i<100;++i) {
 		printf("%d ",pData[i]);
 	}
